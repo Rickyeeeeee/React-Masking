@@ -1,208 +1,162 @@
 import './App.css';
-import { Grid, Paper, Button, Stack, Tab, Tabs, Box, Typography, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Card } from '@mui/material';
-import { useState } from 'react';
-
-function CustomTabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-
-
+import { useEffect, useState, useRef } from 'react';
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+import LeftPanel from './components/LeftPanel';
+import { Fab } from '@mui/material';
+import { create, duration } from '@mui/material/styles/createTransitions';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import { DeliveryDining } from '@mui/icons-material';
 
 function App() {
+  
+  const [editing, setEditing] = useState(true)
   let key = 0;
-  function createData(fileName, generated) {
+
+  function createData(fileName, generated, blob) {
     key += 1;
-    return { fileName, generated, key };
+    return { fileName, generated, key, blob };
   }
-  const files = [
-    createData('imjgwoajgwpefkg1.jpg', false),
-    createData('img2.jpg', false),
-    createData('img3.jpg', false),
-    createData('img3.jpg', false),
-    createData('img3.jpg', false),
-    createData('img3.jpg', false),
-    createData('img3.jpg', false),
-    createData('img3.jpg', false),
-    createData('img3.jpg', false),
-    createData('img4.jpg', false)
-  ];
-  const [value, setValue] = useState(0)
-  const [cardStyle, setCardStyle] = useState({overflow: 'auto', flex: '1', width: 200})
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
+  const [imgFiles, setImgFiles] = useState([])
+  
+  const [curImg, setCurImg] = useState(0);
+  const [delImg, setDelImg] = useState(0);
+
+  const [gridHeight, setGridHeight] = useState(window.innerHeight);
+  const [gridWidth, setGridWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => {
+      setGridHeight(window.innerHeight);
+      setGridWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const fileInputRef = useRef(null);
+
+  const handleFabClick = () => {
+    fileInputRef.current.click();
   };
-  const onToolsCliked = (e) => {
-    setCardStyle({overflow: 'auto', flex: '1', width: 200});
-  };
-  const onImagesCliked = (e) => {
-    setCardStyle({overflow: 'auto', flex: '1', width: 600});
+
+  const [selectedImage, setSelectedImage] = useState(null);
+  const canvasRef = useRef(null);
+
+  const handleImageUpload = (e) => {
+    const newImgFiles = Array.from(e.target.files).map((file) => {
+      return createData(file.name, false, file);
+    });
+    setImgFiles([...imgFiles, ...newImgFiles]);
+
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          setSelectedImage(img);
+          const canvas = canvasRef.current;
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
   };
   
+  const onPreviewButtonCliked = (index) => { 
+    setCurImg(index);
+   }
+
+  useEffect(() => {
+    const file = curImg != -1 ? imgFiles[curImg] : null;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          setSelectedImage(img);
+          const canvas = canvasRef.current;
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = reader.result;
+      };
+      console.log(file.fileName);
+      reader.readAsDataURL(file.blob);
+    } else {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      console.log('what');
+    }
+  }, [curImg]);
+
   return (
-    // <div className="App" >
-    //   <Button variant='contained' color='secondary' size='large' style={{position: 'fixed', bottom: '20px', right: '200px'}}>
-    //     Generate
-    //   </Button>
-    //   <Button variant='outlined' color='secondary' size='large' style={{position: 'fixed', bottom: '20px', right: '20px'}}>
-    //     Upload image
-    //   </Button>
-    //   <div style={{marginTop: "100px", marginLeft: '40px'}}>
-    //     <Grid container direction='row' justifyContent='space-around' spacing={3}>
-    //       <Grid item xs={12} sm={6} md={4} lg={3}>
-    //         <Paper elevation={5} >
-    //           <Box>
-    //             <Tabs value={value} onChange={handleChange} variant='fullWidth'>
-    //               <Tab label='Tools'/>
-    //               <Tab label='Images'/>
-    //             </Tabs>
-    //           </Box>
-    //           <CustomTabPanel value={value} index={0}>
-    //             <Stack spacing={3} color="lightgray" >
-    //               <Button size='small' variant="outlined" color="primary">
-    //                 Draw
-    //               </Button>
-    //               <Button size='small' variant="outlined" color="primary">
-    //                 Undo
-    //               </Button>
-    //               <Button size='small' variant="outlined" color="primary">
-    //                 Clear All
-    //               </Button>
-    //               <Button size='small' variant="outlined" color="primary">
-    //                 Zoom in
-    //               </Button>
-    //               <Button size='small' variant="outlined" color="primary">
-    //                 Zoom out
-    //               </Button>
-    //               <Button size='small' variant="outlined" color="primary">
-    //                 Move
-    //               </Button>
-    //             </Stack> 
-    //           </CustomTabPanel>
-    //           <CustomTabPanel value={value} index={1}>
-    //             <Stack spacing={3} color="lightgray">
-    //               <Button size='small' variant="contained" color="primary">
-    //                 Undo
-    //               </Button>
-    //               <Button size='small' variant="contained" color="primary">
-    //                 Clear All
-    //               </Button>
-    //               <Button size='small' variant="contained" color="primary">
-    //                 Zoom in
-    //               </Button>
-    //               <Button size='small' variant="contained" color="primary">
-    //                 Zoom out
-    //               </Button>
-    //               <Button size='small' variant="contained" color="primary">
-    //                 Move
-    //               </Button>
-    //             </Stack> 
-    //           </CustomTabPanel>
-    //         </Paper>
-    //       </Grid>
-    //       <Grid item xs={12} sm={6} md={8} lg={9} >
-    //         <img src='https://th.bing.com/th/id/OIP.8U8Za7792QwMkrTYZ2xufQHaE8?w=270&h=180&c=7&r=0&o=5&dpr=1.7&pid=1.7' alt='' style={{
-    //           padding: '0px',
-    //           margin: '0px',
-    //           // maxWidth: '100%',
-    //           // maxHeight: '100%',
-    //           // objectFit: 'contain',
-    //           // display: 'block',
-    //           width: '80%'
-    //           // height: '80%'
-    //         }}
-    //           ></img>
-    //       </Grid>
-    //     </Grid>
-    //   </div>
-    // </div>
-    <div className='App' style={{marginTop: '50px', display: 'flex', justifyContent: 'center'}}>
-      <div style={{marginLeft: '20px', height: '100%', display: 'flex', flexDirection: 'column'}}>
-        <Card style={cardStyle}>
-          <Box>
-            <Tabs value={value} onChange={handleChange} variant='standard'>
-              <Tab label='Tools' onClick={onToolsCliked} />
-              <Tab label='Images' onClick={onImagesCliked}/>
-            </Tabs>
-          </Box>
-          <CustomTabPanel value={value} index={0} >
-            <Stack spacing={3} color="lightgray"  alignItems='center'>
-              <Button size='small' variant="outlined" color="primary">
-                Draw
-              </Button>
-              <Button size='small' variant="outlined" color="primary">
-                Undo
-              </Button>
-              <Button size='small' variant="outlined" color="primary">
-                Clear All
-              </Button>
-              <Button size='small' variant="outlined" color="primary">
-                Zoom in
-              </Button>
-              <Button size='small' variant="outlined" color="primary">
-                Zoom out
-              </Button>
-              <Button size='small' variant="outlined" color="primary">
-                Move
-              </Button>
-            </Stack> 
-          </CustomTabPanel>
-          <CustomTabPanel value={value} index={1}>
-            <TableContainer  style={{overflow: 'auto', maxHeight: 400}}>
-              <Table stickyHeader size='small'>
-                <TableHead>
-                  <TableRow>
-                    <TableCell >Num</TableCell>
-                    <TableCell align='center'>Files</TableCell>
-                    <TableCell align='right'>Mask</TableCell>
-                    <TableCell align='right'>Preview</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {files.map((file, index) => (
-                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 }}}>
-                      <TableCell>{index.toString()}</TableCell>
-                      <TableCell align='center'>
-                        <Typography variant='body1' maxWidth='100px' textOverflow='ellipsis'>{file.fileName}</Typography>
-                      </TableCell>
-                      <TableCell align='right'>{files.generated? 'yes' : 'no'}</TableCell>
-                      <TableCell align='right'><Button variant='outlined' size='small' disabled>view</Button></TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CustomTabPanel>
-        </Card>
+    <div className='App' style={{marginTop: '50px', display: 'flex'}}>
+      <Fab variant='extended' onClick={handleFabClick} size='large' style={{position: 'fixed', right: '20px', bottom: '10px'}}>
+        {/* <NavigationIcon sx={{ mr: 1 }} /> */}
+        <FileUploadIcon/>
+        Upload
+      </Fab>
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleImageUpload}
+        multiple
+      />
+      <Fab variant='extended' color='primary' size='large' style={{position: 'fixed', right: '150px', bottom: '10px'}}>
+        {/* <NavigationIcon sx={{ mr: 1 }} /> */}
+        Generate
+      </Fab>
+      <div style={{marginLeft: '30px', height: '100%', display: 'flex', flexDirection: 'column'}}>
+        <LeftPanel 
+          files={imgFiles} 
+          setState={setEditing} 
+          onPreviewClicked={(index) => {
+            setCurImg(index);
+          }} 
+          onDeleteClicked={(index) => {
+            let newImg = curImg;
+            if (curImg > index) {
+              newImg -= 1;
+            } else if (curImg == index) {
+              newImg = -1;
+            }
+            setCurImg(newImg);
+            setDelImg(index);
+            const newImgFiles = [...imgFiles];
+            newImgFiles.splice(index, 1);
+            setImgFiles(newImgFiles);
+          }}/>
       </div>
-      <div style={{flex: 1}}>
-        <img src='https://th.bing.com/th/id/OIP.8U8Za7792QwMkrTYZ2xufQHaE8?w=270&h=180&c=7&r=0&o=5&dpr=1.7&pid=1.7' alt='' style={{
-          padding: '0px',
+      <div style={{marginLeft: '30px', display: 'flex', flex: 1}}>
+        <div className='canva-img' style={{flex: 1, display: 'flex', flexDirection: 'column'}}>
+          <canvas ref={canvasRef} id="mycanvas"style={{
+            padding: '0px',
             margin: '0px',
-            // maxWidth: '100%',
-            // maxHeight: '100%',
-            // objectFit: 'contain',
-            // display: 'block',
-            width: '80%'
-            // height: '80%'
-          }}
-          ></img>
+            objectFit: 'contain',
+            backgroundColor: 'lightgray',
+            maxHeight: gridHeight - 50 - 100,
+            maxWidth: gridWidth - (200 + 60) - 100
+          }}></canvas>
+          <div>
+            <p>
+              File: {curImg != -1 && imgFiles[curImg]? imgFiles[curImg].fileName : 'no'}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
