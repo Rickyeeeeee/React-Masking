@@ -6,7 +6,7 @@ import UndoIcon from '@mui/icons-material/Undo';
 import ClearIcon from '@mui/icons-material/Clear';
 import { DrawOutlined } from "@mui/icons-material";
 
-const LeftPanel = ({files, setState, onPreviewClicked, onDeleteClicked})=> {
+const LeftPanel = ({files, setState, onPreviewClicked, onDeleteClicked, onUndoClicked, onClearClicked, onColorClicked})=> {
 
     const [value, setValue] = useState(0)
     const handleTabChange = (event, newValue) => {
@@ -35,13 +35,13 @@ const LeftPanel = ({files, setState, onPreviewClicked, onDeleteClicked})=> {
           </Box>
           <CustomTabPanel value={value} index={0} >
             <Stack spacing={3} color="lightgray"  alignItems='center'>
-              <Button startIcon={<ModeIcon fontSize='small' />} size='small' variant="outlined" color="primary">
+              <Button startIcon={<ModeIcon fontSize='small'/>} size='small' variant="outlined" color="primary" onClick={onColorClicked}>
                 Draw
               </Button>
-              <Button startIcon={<UndoIcon fontSize="small"/>} size='small' variant="outlined" color="primary">
+              <Button startIcon={<UndoIcon fontSize="small"/>} size='small' variant="outlined" color="primary" onClick={onUndoClicked}>
                 Undo
               </Button>
-              <Button startIcon={<ClearIcon fontSize="small"/>} size='small' variant="outlined" color="primary">
+              <Button startIcon={<ClearIcon fontSize="small"/>} size='small' variant="outlined" color="primary" onClick={onClearClicked}>
                 Clear
               </Button>
             </Stack> 
@@ -54,20 +54,20 @@ const LeftPanel = ({files, setState, onPreviewClicked, onDeleteClicked})=> {
                     <TableCell >Num</TableCell>
                     <TableCell align='center'>Files</TableCell>
                     <TableCell align='right'>Mask</TableCell>
-                    <TableCell align='center'>Preview</TableCell>
-                    <TableCell align='center'>Delete</TableCell>
+                    <TableCell align='right'>Preview</TableCell>
+                    <TableCell align='right'>Delete</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {files.map((file, index) => (
-                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 }}}>
+                    <TableRow hover key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 }}}>
                       <TableCell>{index.toString()}</TableCell>
                       <TableCell align='center'>
                         <Typography variant='body1' maxWidth='100px' textOverflow='ellipsis'>{file.fileName}</Typography>
                       </TableCell>
                       <TableCell align='right'>{files.generated? 'yes' : 'no'}</TableCell>
                       <TableCell align='right'><Button variant='outlined' size='small' onClick={() => onPreviewClicked(index)} >view</Button></TableCell>
-                      <TableCell aligh='right'><Button variant='contained' size='small' color='error' onClick={() => onDeleteClicked(index)}>Delete</Button></TableCell>
+                      <TableCell align='right'><Button variant='contained' color="error" size='small' onClick={() => onDeleteClicked(index)}>Delete</Button></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
