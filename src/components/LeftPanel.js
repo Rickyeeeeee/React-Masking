@@ -44,6 +44,9 @@ const LeftPanel = ({files, setState, onPreviewClicked, onDeleteClicked, onUndoCl
               <Button startIcon={<ClearIcon fontSize="small"/>} size='small' variant="outlined" color="primary" onClick={onClearClicked}>
                 Clear
               </Button>
+              <Button startIcon={<ClearIcon fontSize="small"/>} size='small' variant="contained" color="primary" onClick={onClearClicked}>
+                Run
+              </Button>
             </Stack> 
           </CustomTabPanel>
           <CustomTabPanel value={value} index={1}>

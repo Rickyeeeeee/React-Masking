@@ -161,6 +161,8 @@ function App() {
 
   const handleUndoClick = () => {
     // Remove the last circle from the list
+    console.log(imageRef.current);
+    if (!imageRef.current) return;
     setCircles((prevCircles) => prevCircles.slice(0, -1));
     // Clear the canvas
     const canvas = canvasRef.current;
@@ -183,6 +185,8 @@ function App() {
   
   const handleClearClick = () => {
     // Clear the circles list
+    if (!imageRef.current) return;
+
     setCircles([]);
     // Clear the canvas
     const canvas = canvasRef.current;
@@ -195,6 +199,8 @@ function App() {
   };
   
   const handleChangeColorClick = () => {
+    if (!imageRef.current) return;
+
     circleColor.current = circleColor.current === 'blue' ? 'red' : 'blue';
   };
 
